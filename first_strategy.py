@@ -11,9 +11,9 @@ p_vals = np.linspace(0, 1, 11)
 # MAB settings
 N = 10
 
-payoff_per_arm = 1.5
+payoff_per_arm = 5
 cost_per_arm = 1
-rate_per_arm = 4
+rate_per_arm = 5
 
 ARMs_payoff = payoff_per_arm * np.ones(N)
 ARMs_cost = cost_per_arm * np.ones(N)
