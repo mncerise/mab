@@ -10,14 +10,26 @@ class Agent:
 
         self.depth = 0
 
+        # Bayesian updates
+        self.exponent = 0
+
+    def bay_updates(self):
+        """
+        Update the belief using Bayesian updates.
+        """
+        self.exponent += np.sum(self.mab.arm_rate * self.mab.x) * self.mab.dt
+
+        prob = self.p0 * np.exp(-self.exponent)
+
+        self.p = prob / (prob + (1 - self.p0))
+
     def update_belief(self):
         """
         Update the agent's belief over a single time interval of
         size dt, assuming. See Equation 3.10 in Section 3.3.
         """
-        self.p = (
+        self.p -= (
             self.p
-            + self.p
             * (1 - self.p)
             * np.sum(self.mab.arm_rate * self.mab.x)
             * self.mab.dt
@@ -60,6 +72,7 @@ class Agent:
             )
             i = np.random.choice(np.flatnonzero(vals == vals.max()))
             self.mab.select_arm(i)
+            self.bay_updates()
             # print(i)
 
             self.depth += 1

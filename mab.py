@@ -16,7 +16,7 @@ class MAB:
         self.payoff = 0
         self.value = 0
 
-        self.dt = 0.1
+        self.dt = 0.001
 
     def select_arm(self, i):
         """

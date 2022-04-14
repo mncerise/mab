@@ -5,15 +5,15 @@ from agent import Agent
 from mab import MAB
 
 # Number of iterations
-trials = 200
-p_vals = np.linspace(0, 1, 11)
+trials = 100
+p_vals = np.linspace(0, 1, 11)[:-1]
 
 # MAB settings
-N = 10
+N = 15
 
-payoff_per_arm = 5
-cost_per_arm = 1
-rate_per_arm = 5
+payoff_per_arm = 10
+cost_per_arm = 0.5
+rate_per_arm = 3
 
 ARMs_payoff = payoff_per_arm * np.ones(N)
 ARMs_cost = cost_per_arm * np.ones(N)
@@ -41,12 +41,11 @@ for p in p_vals:
     data.append(vals)
     print(f"Successes: {success}/{trials}")
 
-print(data)
+# print(data)
 
 avg_value = np.mean(data, axis=1)
 std_value = np.std(data, axis=1)
-# plt.plot(p_vals, avg_value, color="blue")
-plt.errorbar(p_vals, avg_value, std_value, fmt=".", color="red")
+plt.errorbar(p_vals, avg_value, yerr=std_value, fmt=".", color="red")
 
 plt.xticks(p_vals)
 
