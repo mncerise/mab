@@ -8,7 +8,9 @@ class MAB:
         self.arm_payoff = np.resize(payoff, N)
         self.arm_cost = np.resize(cost, N)
         self.arm_rate = np.resize(rate, N)
-        self.arm_success = np.random.randint(2, size=N)
+        self.arm_success = np.resize(np.random.randint(2), N)
+        # self.arm_success = np.random.randint(2, size=N)
+        # print(self.arm_success)
 
         self.x = np.zeros(N)
 
@@ -16,7 +18,7 @@ class MAB:
         self.payoff = 0
         self.value = 0
 
-        self.dt = 0.001
+        self.dt = 0.1
 
     def select_arm(self, i):
         """
@@ -29,7 +31,8 @@ class MAB:
         """
         Resets the multi-armed bandit game.
         """
-        self.arm_success = np.random.randint(2, size=self.N)
+        # self.arm_success = np.random.randint(2, size=self.N)
+        # self.arm_success = np.resize(np.random.randint(2), self.N)
         self.x = np.zeros(self.N)
 
         self.costs = 0

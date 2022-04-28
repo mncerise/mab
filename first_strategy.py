@@ -5,7 +5,7 @@ from agent import Agent
 from mab import MAB
 
 # Number of iterations
-trials = 100
+trials = 50
 p_vals = np.linspace(0, 1, 11)[:-1]
 
 # MAB settings
@@ -31,7 +31,7 @@ for p in p_vals:
     vals = []
     success = 0
     for t in range(trials):
-        agent.first_strategy()
+        agent.first_strategy(agent.bay_updates)
         vals.append(agent.mab.value)
 
         if agent.mab.payoff != 0:

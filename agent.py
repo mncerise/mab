@@ -12,27 +12,48 @@ class Agent:
 
         # Bayesian updates
         self.exponent = 0
+        self.p_vals = [self.p0]
+
+        self.p_upd = [self.p0]
+        self.p_bay = [self.p0]
 
     def bay_updates(self):
         """
         Update the belief using Bayesian updates.
         """
+        # self.exponent += np.sum(self.mab.arm_rate * self.mab.x) * self.mab.dt
+        # print(np.sum(self.mab.x))
+
+        # prob = self.p0 * np.exp(-self.exponent)
+
+        # self.p = prob / (prob + (1 - self.p0))
+
         self.exponent += np.sum(self.mab.arm_rate * self.mab.x) * self.mab.dt
-
         prob = self.p0 * np.exp(-self.exponent)
+        self.p_bay.append(prob / (prob + (1 - self.p0)))
 
-        self.p = prob / (prob + (1 - self.p0))
+        self.p = self.p_bay[-1]
 
     def update_belief(self):
         """
         Update the agent's belief over a single time interval of
         size dt, assuming. See Equation 3.10 in Section 3.3.
         """
-        self.p -= (
-            self.p
-            * (1 - self.p)
-            * np.sum(self.mab.arm_rate * self.mab.x)
-            * self.mab.dt
+        # self.p -= (
+        #     self.p
+        #     * (1 - self.p)
+        #     * np.sum(self.mab.arm_rate * self.mab.x)
+        #     * self.mab.dt
+        # )
+
+        self.p_upd.append(
+            self.p_upd[-1]
+            - (
+                self.p_upd[-1]
+                * (1 - self.p_upd[-1])
+                * np.sum(self.mab.arm_rate * self.mab.x)
+                * self.mab.dt
+            )
         )
 
     def reset(self):
@@ -40,7 +61,14 @@ class Agent:
         Resets the agent belief to the initial belief, and
         resets the corresponding MAB game
         """
+        self.depth = 0
+
         self.p = self.p0
+        self.p_vals = [self.p0]
+
+        self.exponent = 0
+        self.p_bay = [self.p0]
+        self.p_upd = [self.p0]
 
         self.mab.reset()
 
@@ -55,12 +83,12 @@ class Agent:
 
         return breakthrough - flowcost + future
 
-    def first_strategy(self):
+    def first_strategy(self, update):
         """
         Optimal strategy based on the first theorem in
         Multi-Armed Exponential Bandit [Lang].
         """
-        if self.depth > 4500 or self.p <= np.min(
+        if self.depth > 986 or self.p <= np.min(
             self.mab.arm_cost / (self.mab.arm_rate * self.mab.arm_payoff)
         ):
             self.mab.quit()
@@ -70,9 +98,15 @@ class Agent:
                 self.mab.arm_rate * self.p
                 - self.mab.arm_cost / self.mab.arm_rate
             )
-            i = np.random.choice(np.flatnonzero(vals == vals.max()))
+            # i = np.random.choice(np.flatnonzero(vals == vals.max()))
+            i = np.argmax(vals)
+            print(i)
             self.mab.select_arm(i)
+            # update()
+            self.update_belief()
             self.bay_updates()
+            print("comp", self.p_bay[-1], self.p_upd[-1])
+            self.p_vals.append(self.p)
             # print(i)
 
             self.depth += 1
@@ -81,7 +115,7 @@ class Agent:
             if self.mab.timestep() == 1:
                 self.mab.quit()
             else:
-                self.first_strategy()
+                self.first_strategy(update)
 
     def basic_strategy(self):
         self.mab.play()
