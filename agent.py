@@ -19,15 +19,9 @@ class Agent:
 
     def bay_updates(self):
         """
-        Update the belief using Bayesian updates.
+        Update the agent's belief over a single time interval of size dt
+        using Bayesian updates. See Equation 3.11 in Section 3.3.
         """
-        # self.exponent += np.sum(self.mab.arm_rate * self.mab.x) * self.mab.dt
-        # print(np.sum(self.mab.x))
-
-        # prob = self.p0 * np.exp(-self.exponent)
-
-        # self.p = prob / (prob + (1 - self.p0))
-
         self.exponent += np.sum(self.mab.arm_rate * self.mab.x) * self.mab.dt
         prob = self.p0 * np.exp(-self.exponent)
         self.p_bay.append(prob / (prob + (1 - self.p0)))
@@ -36,16 +30,9 @@ class Agent:
 
     def update_belief(self):
         """
-        Update the agent's belief over a single time interval of
-        size dt, assuming. See Equation 3.10 in Section 3.3.
+        Update the agent's belief over a single time interval of size dt
+        by adapting the previous belief. See Equation 3.12 in Section 3.3.
         """
-        # self.p -= (
-        #     self.p
-        #     * (1 - self.p)
-        #     * np.sum(self.mab.arm_rate * self.mab.x)
-        #     * self.mab.dt
-        # )
-
         self.p_upd.append(
             self.p_upd[-1]
             - (
@@ -83,7 +70,7 @@ class Agent:
 
         return breakthrough - flowcost + future
 
-    def first_strategy(self, update):
+    def first_strategy(self):
         """
         Optimal strategy based on the first theorem in
         Multi-Armed Exponential Bandit [Lang].
@@ -93,21 +80,17 @@ class Agent:
         ):
             self.mab.quit()
         else:
-            # Choose random project i that maximizes (pi_i p - c_i / lambda_i)
+            # Choose project i that maximizes (pi_i p - c_i / lambda_i)
             vals = (
                 self.mab.arm_rate * self.p
                 - self.mab.arm_cost / self.mab.arm_rate
             )
-            # i = np.random.choice(np.flatnonzero(vals == vals.max()))
             i = np.argmax(vals)
-            print(i)
             self.mab.select_arm(i)
-            # update()
+
             self.update_belief()
             self.bay_updates()
-            print("comp", self.p_bay[-1], self.p_upd[-1])
             self.p_vals.append(self.p)
-            # print(i)
 
             self.depth += 1
 
@@ -115,7 +98,7 @@ class Agent:
             if self.mab.timestep() == 1:
                 self.mab.quit()
             else:
-                self.first_strategy(update)
+                self.first_strategy()
 
     def basic_strategy(self):
         self.mab.play()

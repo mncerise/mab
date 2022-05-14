@@ -2,23 +2,40 @@ import numpy as np
 
 
 class MAB:
-    def __init__(self, N, payoff, cost, rate):
+    def __init__(
+        self, N, payoff, cost, rate, info=False, source=(0, 0), b_ind=False
+    ):
         self.N = N
 
         self.arm_payoff = np.resize(payoff, N)
         self.arm_cost = np.resize(cost, N)
         self.arm_rate = np.resize(rate, N)
-        self.arm_success = np.resize(np.random.randint(2), N)
-        # self.arm_success = np.random.randint(2, size=N)
-        # print(self.arm_success)
-
-        self.x = np.zeros(N)
 
         self.costs = 0
         self.payoff = 0
         self.value = 0
 
-        self.dt = 0.1
+        self.dt = 0.01
+
+        # If set, an information source is added
+        if info:
+            self.N = N + 1
+
+            self.arm_payoff = np.append(
+                self.arm_payoff,
+                np.max(self.arm_payoff - self.arm_cost / self.arm_rate),
+            )
+            self.arm_cost = np.append(self.arm_cost, source[0])
+            self.arm_rate = np.append(self.arm_rate, source[1])
+
+        self.x = np.zeros(self.N)
+
+        # If set, possibility of succes is arm dependent
+        self.b_ind = b_ind
+        if b_ind:
+            self.arm_success = np.random.randint(2, size=self.N)
+        else:
+            self.arm_success = np.resize(np.random.randint(2), self.N)
 
     def select_arm(self, i):
         """
@@ -32,7 +49,11 @@ class MAB:
         Resets the multi-armed bandit game.
         """
         # self.arm_success = np.random.randint(2, size=self.N)
-        # self.arm_success = np.resize(np.random.randint(2), self.N)
+        if self.b_ind:
+            self.arm_success = np.random.randint(2, size=self.N)
+        else:
+            self.arm_success = np.resize(np.random.randint(2), self.N)
+
         self.x = np.zeros(self.N)
 
         self.costs = 0
@@ -59,6 +80,10 @@ class MAB:
         return 0
 
     def quit(self):
+        """
+        The agent quits, this can be interpreted equivalently with
+        setting resource allocation to zero for all arms.
+        """
         if self.payoff == 0:
             print("QUITTING WITHOUT BREAKTHROUGH")
         else:
