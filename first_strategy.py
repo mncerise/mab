@@ -25,14 +25,21 @@ else:
     ARMs_cost = np.random.randint(1, 11, size=N)
     ARMs_rate = np.random.randint(1, 11, size=N)
 
+specific = True
+if specific:
+    p = np.linspace(0, 1, N + 1)
+    vals = np.power(30, 1.5 * (p - 0.2)) - 1
+    payoff_per_arm = (vals[1:] - vals[:-1]) / (p[1:] - p[:-1])
+    cost_per_arm = -(vals[:-1] - p[:-1] * payoff_per_arm)
+    rate_per_arm = np.ones(N)
 
 mab = MAB(
     N,
     payoff_per_arm,
     cost_per_arm,
     rate_per_arm,
-    info=False,
-    source=(0.25, 20),
+    info=True,
+    source=(np.max(payoff_per_arm - cost_per_arm / rate_per_arm) * 0.2, 1),
     b_ind=False,
 )
 agent = Agent(mab, 0.5)

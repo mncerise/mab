@@ -3,7 +3,16 @@ import numpy as np
 
 class MAB:
     def __init__(
-        self, N, payoff, cost, rate, info=False, source=(0, 0), b_ind=False
+        self,
+        N,
+        payoff,
+        cost,
+        rate,
+        priori=0.5,
+        info=False,
+        source=(0, 0),
+        b_ind=False,
+        log=False,
     ):
         self.N = N
 
@@ -16,6 +25,7 @@ class MAB:
         self.value = 0
 
         self.dt = 0.01
+        self.log = log
 
         # If set, an information source is added
         if info:
@@ -30,12 +40,17 @@ class MAB:
 
         self.x = np.zeros(self.N)
 
+        self.priori = priori
         # If set, possibility of succes is arm dependent
         self.b_ind = b_ind
         if b_ind:
-            self.arm_success = np.random.randint(2, size=self.N)
+            # self.arm_success = np.random.randint(2, size=self.N)
+            self.arm_success = np.random.binomial(1, priori, self.N)
         else:
-            self.arm_success = np.resize(np.random.randint(2), self.N)
+            # self.arm_success = np.resize(np.random.randint(2), self.N)
+            self.arm_success = np.resize(
+                np.random.binomial(1, priori, 1), self.N
+            )
 
     def select_arm(self, i):
         """
@@ -48,11 +63,14 @@ class MAB:
         """
         Resets the multi-armed bandit game.
         """
-        # self.arm_success = np.random.randint(2, size=self.N)
         if self.b_ind:
-            self.arm_success = np.random.randint(2, size=self.N)
+            # self.arm_success = np.random.randint(2, size=self.N)
+            self.arm_success = np.random.binomial(1, self.priori, self.N)
         else:
-            self.arm_success = np.resize(np.random.randint(2), self.N)
+            # self.arm_success = np.resize(np.random.randint(2), self.N)
+            self.arm_success = np.resize(
+                np.random.binomial(1, self.priori, 1), self.N
+            )
 
         self.x = np.zeros(self.N)
 
@@ -84,13 +102,13 @@ class MAB:
         The agent quits, this can be interpreted equivalently with
         setting resource allocation to zero for all arms.
         """
-        if self.payoff == 0:
+        if self.log and self.payoff == 0:
             print("QUITTING WITHOUT BREAKTHROUGH")
-        else:
+        elif self.log:
             print("BREAKTHROUGH OCCURED")
 
         self.value = self.payoff - self.costs
-        print("Value: %.2f" % self.value)
+        # print("Value: %.2f" % self.value)
 
         return
 

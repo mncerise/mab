@@ -43,6 +43,9 @@ class Agent:
             )
         )
 
+        if self.p_upd[-1] > self.p_upd[-2]:
+            print(self.p_upd[-1], self.p_upd[-2])
+
     def reset(self):
         """
         Resets the agent belief to the initial belief, and

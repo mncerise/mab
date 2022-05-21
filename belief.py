@@ -1,4 +1,3 @@
-from urllib.request import proxy_bypass
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -6,7 +5,7 @@ from agent import Agent
 from mab import MAB
 
 trials = 200
-p0 = 0.9
+p0 = 0.95
 
 # MAB settings
 N = 10
@@ -17,7 +16,7 @@ rate_per_arm = 3
 
 
 def plot_belief(dt, random=False):
-    mab = MAB(N, payoff_per_arm, cost_per_arm, rate_per_arm, b_ind=True)
+    mab = MAB(N, payoff_per_arm, cost_per_arm, rate_per_arm, b_ind=False)
     agent = Agent(mab, p0)
 
     # Set time step
@@ -38,11 +37,11 @@ def plot_belief(dt, random=False):
         p_upd.append(agent.p_upd)
         agent.reset()
 
-    q = np.argmax([len(r) for r in p_bay])
-    p_bay_l = p_bay[q]
-    p_upd_l = p_upd[q]
-
     # PLOT the longest single run
+    # q = np.argmax([len(r) for r in p_bay])
+    # p_bay_l = p_bay[q]
+    # p_upd_l = p_upd[q]
+
     # plt.plot(
     #     np.arange(len(p_bay_l)) * agent.mab.dt,
     #     p_bay_l,
@@ -59,36 +58,41 @@ def plot_belief(dt, random=False):
     p_bay = np.array([np.pad(r, (0, length - len(r))) for r in p_bay])
     p_upd = np.array([np.pad(r, (0, length - len(r))) for r in p_upd])
 
+    # print(np.max(p_bay, axis=0))
+    # print(p_bay[:, 8])
+
+    # plt.hist(p_bay[:, 8])
+
     plt.plot(
         np.arange(np.shape(p_bay)[1]) * agent.mab.dt,
-        np.mean(p_bay, axis=0),
-        label="bayesian updates",
+        np.max(p_bay, axis=0),
+        label="Bayesian updates",
     )
     plt.plot(
         np.arange(np.shape(p_upd)[1]) * agent.mab.dt,
-        np.mean(p_upd, axis=0),
+        np.max(p_upd, axis=0),
         label="adaptations",
     )
 
-    plt.errorbar(
-        np.arange(np.shape(p_bay)[1]) * agent.mab.dt,
-        np.mean(p_bay, axis=0),
-        yerr=np.std(p_bay, axis=0),
-        fmt=".",
-        color="blue",
-        capsize=2,
-    )
-    plt.errorbar(
-        np.arange(np.shape(p_upd)[1]) * agent.mab.dt,
-        np.mean(p_upd, axis=0),
-        yerr=np.std(p_upd, axis=0),
-        fmt=".",
-        color="red",
-        capsize=2,
-    )
+    # plt.errorbar(
+    #     np.arange(np.shape(p_bay)[1]) * agent.mab.dt,
+    #     np.mean(p_bay, axis=0),
+    #     yerr=np.std(p_bay, axis=0),
+    #     fmt=".",
+    #     color="blue",
+    #     capsize=2,
+    # )
+    # plt.errorbar(
+    #     np.arange(np.shape(p_upd)[1]) * agent.mab.dt,
+    #     np.mean(p_upd, axis=0),
+    #     yerr=np.std(p_upd, axis=0),
+    #     fmt=".",
+    #     color="red",
+    #     capsize=2,
+    # )
 
-    plt.xlim(0, 0.6)
-    plt.ylim(0, p0)
+    plt.xlim(0, 2.3)
+    plt.ylim(0, 1)
 
     plt.title(f"$dt$ = {dt}")
     plt.xlabel("time $t$")
@@ -97,9 +101,9 @@ def plot_belief(dt, random=False):
 
 
 def belief_figure(random=False):
-    fig = plt.figure(figsize=(15, 20))
+    _ = plt.figure(figsize=(15, 20))
 
-    vals = [0.2, 0.1, 0.05, 0.01]
+    vals = [0.2, 0.1, 0.05, 0.02]
 
     for i in range(4):
         plt.subplot(2, 2, i + 1)
@@ -112,4 +116,4 @@ def belief_figure(random=False):
     plt.show()
 
 
-belief_figure(random=True)
+belief_figure(random=False)
