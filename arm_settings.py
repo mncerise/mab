@@ -6,7 +6,7 @@ def setting_a():
     Define parameters for identical arms.
     """
     payoff_per_arm = 10
-    cost_per_arm = 0.5
+    cost_per_arm = 6
     rate_per_arm = 3
 
     return (payoff_per_arm, cost_per_arm, rate_per_arm)

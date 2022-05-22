@@ -3,30 +3,30 @@ import matplotlib.pyplot as plt
 
 from agent import Agent
 from mab import MAB
+import arm_settings as arm
 
 trials = 200
 p0 = 0.95
 
 # MAB settings
-N = 10
+N = 20
 
-payoff_per_arm = 10
-cost_per_arm = 0.5
-rate_per_arm = 3
+# Choose mode "identical", "random", "specific"
+arm_mode = "specific"
+if arm_mode == "identical":
+    payoff_per_arm, cost_per_arm, rate_per_arm = arm.setting_a()
+elif arm_mode == "random":
+    payoff_per_arm, cost_per_arm, rate_per_arm = arm.setting_b(N)
+else:
+    payoff_per_arm, cost_per_arm, rate_per_arm = arm.setting_c(N)
 
 
-def plot_belief(dt, random=False):
+def plot_belief(dt, payoff_per_arm, cost_per_arm, rate_per_arm):
     mab = MAB(N, payoff_per_arm, cost_per_arm, rate_per_arm, b_ind=False)
     agent = Agent(mab, p0)
 
     # Set time step
     agent.mab.dt = dt
-
-    # If random is set, arms aren't identical
-    if random:
-        agent.mab.arm_payoff = np.random.randint(1, 11, size=N)
-        agent.mab.arm_cost = np.random.randint(1, 11, size=N)
-        agent.mab.arm_rate = np.random.randint(1, 11, size=N)
 
     # Compute belief using bayesian updates and adaptations
     p_bay = []
@@ -53,15 +53,10 @@ def plot_belief(dt, random=False):
     #     label="adaptations",
     # )
 
-    # PLOT the average over all runs
+    # PLOT the maximal value over all runs (deterministic except for b=0 or 1)
     length = np.max([len(p) for p in p_bay])
     p_bay = np.array([np.pad(r, (0, length - len(r))) for r in p_bay])
     p_upd = np.array([np.pad(r, (0, length - len(r))) for r in p_upd])
-
-    # print(np.max(p_bay, axis=0))
-    # print(p_bay[:, 8])
-
-    # plt.hist(p_bay[:, 8])
 
     plt.plot(
         np.arange(np.shape(p_bay)[1]) * agent.mab.dt,
@@ -91,7 +86,7 @@ def plot_belief(dt, random=False):
     #     capsize=2,
     # )
 
-    plt.xlim(0, 2.3)
+    plt.xlim(0, 4.3)
     plt.ylim(0, 1)
 
     plt.title(f"$dt$ = {dt}")
@@ -100,14 +95,32 @@ def plot_belief(dt, random=False):
     plt.legend()
 
 
-def belief_figure(random=False):
-    _ = plt.figure(figsize=(15, 20))
+def belief_figure(payoff_per_arm, cost_per_arm, rate_per_arm):
+    _, axes = plt.subplots(4, figsize=(15, 20))
 
-    vals = [0.2, 0.1, 0.05, 0.02]
+    vals = [0.2, 0.1, 0.05, 0.01]
 
+    # xlims = []
     for i in range(4):
         plt.subplot(2, 2, i + 1)
-        plot_belief(vals[i], random)
+        plot_belief(vals[i], payoff_per_arm, cost_per_arm, rate_per_arm)
+    # for i in range(len(axes)):
+    # plt.subplot(2, 2, i + 1)
+    # plot_belief(vals[i], payoff_per_arm, cost_per_arm, rate_per_arm)
+
+    # print(xlims)
+    # print(
+    #     ax[0].get_xlim(),
+    #     ax[1].get_xlim(),
+    #     ax[2].get_xlim(),
+    #     ax[3].get_xlim(),
+    # )
+    # print(ax[0])
+    # plt.xlim(0, np.max(xlims))
+    # ax[1].set_xlim(0, np.max(xlims))
+    # ax[2].set_xlim(0, np.max(xlims))
+    # ax[3].set_xlim(0, np.max(xlims))
+    # plt.setp(ax, xlim=(0, np.max(xlims)))
 
     plt.suptitle(
         "Comparison of different methods to calculate the agent's belief over time."
@@ -116,4 +129,4 @@ def belief_figure(random=False):
     plt.show()
 
 
-belief_figure(random=False)
+belief_figure(payoff_per_arm, cost_per_arm, rate_per_arm)

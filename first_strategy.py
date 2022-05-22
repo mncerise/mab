@@ -3,42 +3,30 @@ import matplotlib.pyplot as plt
 
 from agent import Agent
 from mab import MAB
+import arm_settings as arm
 
 # Number of iterations
-trials = 200
+trials = 1000
 p_vals = np.linspace(0, 1, 21)[:-1]
 
 # MAB settings
-N = 15
+N = 20
 
-equal_arms = True
-payoff_per_arm = 10
-cost_per_arm = 0.5
-rate_per_arm = 3
-
-if equal_arms:
-    ARMs_payoff = payoff_per_arm
-    ARMs_cost = cost_per_arm
-    ARMs_rate = rate_per_arm
+# Choose mode "identical", "random", "specific"
+arm_mode = "random"
+if arm_mode == "identical":
+    payoff_per_arm, cost_per_arm, rate_per_arm = arm.setting_a()
+elif arm_mode == "random":
+    payoff_per_arm, cost_per_arm, rate_per_arm = arm.setting_b(N)
 else:
-    ARMs_payoff = np.random.randint(1, 11, size=N)
-    ARMs_cost = np.random.randint(1, 11, size=N)
-    ARMs_rate = np.random.randint(1, 11, size=N)
-
-specific = True
-if specific:
-    p = np.linspace(0, 1, N + 1)
-    vals = np.power(30, 1.5 * (p - 0.2)) - 1
-    payoff_per_arm = (vals[1:] - vals[:-1]) / (p[1:] - p[:-1])
-    cost_per_arm = -(vals[:-1] - p[:-1] * payoff_per_arm)
-    rate_per_arm = np.ones(N)
+    payoff_per_arm, cost_per_arm, rate_per_arm = arm.setting_c(N)
 
 mab = MAB(
     N,
     payoff_per_arm,
     cost_per_arm,
     rate_per_arm,
-    info=True,
+    info=False,
     source=(np.max(payoff_per_arm - cost_per_arm / rate_per_arm) * 0.2, 1),
     b_ind=False,
 )
@@ -62,6 +50,8 @@ for p in p_vals:
     data.append(vals)
     print(f"Successes: {success}/{trials}")
 
+_ = plt.figure(figsize=(15, 20))
+
 avg_value = np.mean(data, axis=1)
 std_value = np.std(data, axis=1)
 plt.errorbar(p_vals, avg_value, yerr=std_value, fmt=".", color="red")
@@ -69,7 +59,7 @@ plt.errorbar(p_vals, avg_value, yerr=std_value, fmt=".", color="red")
 plt.xticks(p_vals[::2])
 
 plt.title(
-    "Agent's strategy based on Theorem 1 in Multi-Armed Exponential Bandit [Gao et al]"
+    "Agent's strategy based on Theorem 1 in Multi-Armed Exponential Bandit [Chen et al]"
 )
 plt.xlabel("initial belief $p$")
 plt.ylabel("value")

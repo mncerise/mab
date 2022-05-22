@@ -1,37 +1,26 @@
-import black
 import numpy as np
 import matplotlib.pyplot as plt
 
 from agent import Agent
 from mab import MAB
+import arm_settings as arm
 
 # MAB settings
 N = 20
-# random = True
 
-payoff_per_arm = 20
-cost_per_arm = 6
-rate_per_arm = 3
-
-# payoff_per_arm = np.linspace(0, 50, N)
-
-# if random:
-#     payoff_per_arm = np.random.uniform(0, 20, size=N)
-#     cost_per_arm = np.random.uniform(5, 10, size=N)
-#     rate_per_arm = np.random.uniform(0.01, 8, size=N)
+# Choose mode "identical", "random", "specific"
+arm_mode = "specific"
+if arm_mode == "identical":
+    payoff_per_arm, cost_per_arm, rate_per_arm = arm.setting_a()
+elif arm_mode == "random":
+    payoff_per_arm, cost_per_arm, rate_per_arm = arm.setting_b(N)
+else:
+    payoff_per_arm, cost_per_arm, rate_per_arm = arm.setting_c(N)
 
 
-def plot_gain(N, info=True):
+def plot_gain(N, payoff_per_arm, cost_per_arm, rate_per_arm, info=False):
     p = np.linspace(0, 1, N + 1)
-    vals = np.power(30, 1.5 * (p - 0.2)) - 1
-    slopes = (vals[1:] - vals[:-1]) / (p[1:] - p[:-1])
-    offsets = vals[:-1] - p[:-1] * slopes
-    # offsets = p[:-1] * slopes - 0.5
-
-    # Set arm parameters
-    payoff_per_arm = slopes
-    cost_per_arm = -offsets
-    rate_per_arm = np.ones(N)
+    # # offsets = p[:-1] * slopes - 0.5
 
     gain = np.max(
         payoff_per_arm * np.vstack(p) - cost_per_arm / rate_per_arm,
@@ -40,10 +29,6 @@ def plot_gain(N, info=True):
     )
 
     plt.plot(p, gain, label="projects")
-
-    # for i in range(N):
-    #     plt.plot(p, slopes[i] * p + offsets[i])
-    # plt.plot(p, vals, "o", color="black")
     plt.ylim(-5, 60)
 
     if info:
@@ -65,4 +50,4 @@ def plot_gain(N, info=True):
     plt.show()
 
 
-plot_gain(N)
+plot_gain(N, payoff_per_arm, cost_per_arm, rate_per_arm)
