@@ -44,10 +44,8 @@ class MAB:
         # If set, possibility of succes is arm dependent
         self.b_ind = b_ind
         if b_ind:
-            # self.arm_success = np.random.randint(2, size=self.N)
             self.arm_success = np.random.binomial(1, priori, self.N)
         else:
-            # self.arm_success = np.resize(np.random.randint(2), self.N)
             self.arm_success = np.resize(
                 np.random.binomial(1, priori, 1), self.N
             )
@@ -64,10 +62,8 @@ class MAB:
         Resets the multi-armed bandit game.
         """
         if self.b_ind:
-            # self.arm_success = np.random.randint(2, size=self.N)
             self.arm_success = np.random.binomial(1, self.priori, self.N)
         else:
-            # self.arm_success = np.resize(np.random.randint(2), self.N)
             self.arm_success = np.resize(
                 np.random.binomial(1, self.priori, 1), self.N
             )

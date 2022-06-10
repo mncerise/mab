@@ -13,7 +13,7 @@ p_vals = np.linspace(0, 1, 21)[:-1]
 N = 20
 
 # Choose mode "identical", "random", "specific"
-arm_mode = "random"
+arm_mode = "identical"
 if arm_mode == "identical":
     payoff_per_arm, cost_per_arm, rate_per_arm = arm.setting_a()
 elif arm_mode == "random":

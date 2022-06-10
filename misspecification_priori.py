@@ -8,12 +8,12 @@ from agent import Agent
 from mab import MAB
 import arm_settings as arm
 
-trials = 100
+trials = 1000
 p_vals = np.linspace(0, 1, 41)[:-1]
-N = 10
+N = 20
 
 # Choose mode "identical", "random", "specific"
-arm_mode = "specific"
+arm_mode = "identical"
 if arm_mode == "identical":
     payoff_per_arm, cost_per_arm, rate_per_arm = arm.setting_a()
 elif arm_mode == "random":

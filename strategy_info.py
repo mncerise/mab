@@ -1,24 +1,40 @@
-# Similar to first_strategy.py, but experiments
-# are run once with and once without
-# information source to compare
+# Similar to first_strategy.py, but experiments are run
+# once with and once without information source to compare
+# or once with possibility of succes general and once with
+# possibility of success individual per arm.
 import numpy as np
 import matplotlib.pyplot as plt
 
 from agent import Agent
 from mab import MAB
+import arm_settings as arm
 
 trials = 1000
 p_vals = np.linspace(0, 1, 41)[:-1]
-N = 10
+N = 20
 
-p = np.linspace(0, 1, N + 1)
-vals = np.power(30, 1.5 * (p - 0.2)) - 1
-payoff_per_arm = (vals[1:] - vals[:-1]) / (p[1:] - p[:-1])
-cost_per_arm = -(vals[:-1] - p[:-1] * payoff_per_arm)
-rate_per_arm = np.ones(N)
+# Choose mode "identical", "random", "specific"
+arm_mode = "specific"
+if arm_mode == "identical":
+    payoff_per_arm, cost_per_arm, rate_per_arm = arm.setting_a()
+elif arm_mode == "random":
+    payoff_per_arm, cost_per_arm, rate_per_arm = arm.setting_b(N)
+else:
+    payoff_per_arm, cost_per_arm, rate_per_arm = arm.setting_c(N)
+
+# Choose experiment "info" or "b_ind"
+experiment = "b_ind"
 
 
-def plot_values(label, info=False):
+def plot_values(
+    N,
+    payoff_per_arm,
+    cost_per_arm,
+    rate_per_arm,
+    label,
+    info=False,
+    b_ind=False,
+):
     mab = MAB(
         N,
         payoff_per_arm,
@@ -26,7 +42,7 @@ def plot_values(label, info=False):
         rate_per_arm,
         info=info,
         source=(np.max(payoff_per_arm - cost_per_arm / rate_per_arm) * 0.2, 1),
-        b_ind=False,
+        b_ind=b_ind,
     )
 
     agent = Agent(mab, 0.5)
@@ -55,8 +71,41 @@ def plot_values(label, info=False):
     plt.errorbar(p_vals, avg_value, yerr=std_value, fmt=".", label=label)
 
 
-plot_values("without information", info=False)
-plot_values("information source", info=True)
+_ = plt.figure(figsize=(10, 6))
+if experiment == "info":
+    plot_values(
+        N,
+        payoff_per_arm,
+        cost_per_arm,
+        rate_per_arm,
+        "without information",
+        info=False,
+    )
+    plot_values(
+        N,
+        payoff_per_arm,
+        cost_per_arm,
+        rate_per_arm,
+        "information source",
+        info=True,
+    )
+else:
+    plot_values(
+        N,
+        payoff_per_arm,
+        cost_per_arm,
+        rate_per_arm,
+        "general possibility",
+        b_ind=False,
+    )
+    plot_values(
+        N,
+        payoff_per_arm,
+        cost_per_arm,
+        rate_per_arm,
+        "possibility per arm",
+        b_ind=True,
+    )
 
 plt.xticks(p_vals[::2])
 

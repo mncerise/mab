@@ -6,29 +6,25 @@ import matplotlib.pyplot as plt
 
 from agent import Agent
 from mab import MAB
+import arm_settings as arm
 
 trials = 1000
 p_vals = np.linspace(0, 1, 41)[:-1]
-N = 10
+N = 20
 
-mode = 1
-if mode == 0:
-    payoff_per_arm = 10
-    cost_per_arm = 0.5
-    rate_per_arm = 3
-elif mode == 1:
-    payoff_per_arm = np.random.randint(1, 11, size=N)
-    cost_per_arm = np.random.randint(1, 11, size=N)
-    rate_per_arm = np.random.randint(1, 11, size=N)
+# Choose mode "identical", "random", "specific"
+arm_mode = "specific"
+if arm_mode == "identical":
+    payoff_per_arm, cost_per_arm, rate_per_arm = arm.setting_a()
+elif arm_mode == "random":
+    payoff_per_arm, cost_per_arm, rate_per_arm = arm.setting_b(N)
 else:
-    p = np.linspace(0, 1, N + 1)
-    vals = np.power(30, 1.5 * (p - 0.2)) - 1
-    payoff_per_arm = (vals[1:] - vals[:-1]) / (p[1:] - p[:-1])
-    cost_per_arm = -(vals[:-1] - p[:-1] * payoff_per_arm)
-    rate_per_arm = np.ones(N)
+    payoff_per_arm, cost_per_arm, rate_per_arm = arm.setting_c(N)
 
 
-def plot_values(label, priori=False):
+def plot_values(
+    N, payoff_per_arm, cost_per_arm, rate_per_arm, label, priori=False
+):
     mab = MAB(
         N,
         payoff_per_arm,
@@ -64,8 +60,24 @@ def plot_values(label, priori=False):
     plt.errorbar(p_vals, avg_value, yerr=std_value, fmt=".", label=label)
 
 
-plot_values("misspecification", priori=False)
-plot_values("priori matches initial belief", priori=True)
+_ = plt.figure(figsize=(10, 6))
+
+plot_values(
+    N,
+    payoff_per_arm,
+    cost_per_arm,
+    rate_per_arm,
+    "misspecification",
+    priori=False,
+)
+plot_values(
+    N,
+    payoff_per_arm,
+    cost_per_arm,
+    rate_per_arm,
+    "priori matches initial belief",
+    priori=True,
+)
 
 plt.xticks(p_vals[::2])
 
