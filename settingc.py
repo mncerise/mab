@@ -1,10 +1,11 @@
-import black
+"""
+Author: Mara van der Meulen
+---
+Produce figures to illustrate approximating exponential growth
+through linear interpolation.
+"""
 import numpy as np
 import matplotlib.pyplot as plt
-
-from agent import Agent
-from mab import MAB
-import arm_settings as arm
 
 # MAB settings
 N = 20
@@ -21,7 +22,7 @@ cost_per_arm = -offsets
 rate_per_arm = np.ones(N)
 
 
-_, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 20))
+_, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5.5))
 # Plot the results of linear interpolation
 for i in range(N):
     ax1.plot(p, slopes[i] * p + offsets[i])

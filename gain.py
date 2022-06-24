@@ -1,8 +1,11 @@
+"""
+Author: Mara van der Meulen
+---
+Plot the maximal expected gain over all projects/arms.
+"""
 import numpy as np
 import matplotlib.pyplot as plt
 
-from agent import Agent
-from mab import MAB
 import arm_settings as arm
 
 # MAB settings
@@ -19,8 +22,10 @@ else:
 
 
 def plot_gain(N, payoff_per_arm, cost_per_arm, rate_per_arm, info=False):
+    """
+    Plot the maximal expected gain over all arms given their parameters.
+    """
     p = np.linspace(0, 1, N + 1)
-    # # offsets = p[:-1] * slopes - 0.5
 
     gain = np.max(
         payoff_per_arm * np.vstack(p) - cost_per_arm / rate_per_arm,
@@ -28,6 +33,7 @@ def plot_gain(N, payoff_per_arm, cost_per_arm, rate_per_arm, info=False):
         initial=0,
     )
 
+    _ = plt.figure(figsize=(7, 5))
     plt.plot(p, gain, label="projects")
     plt.ylim(-5, 60)
 

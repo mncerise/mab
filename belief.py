@@ -1,3 +1,10 @@
+"""
+Author: Mara van der Meulen
+---
+Experiment comparing two methods to calculate the agent's belief,
+this belief represents the probability of a breakthrough occuring in
+the future given that none has occured yet.
+"""
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -22,6 +29,10 @@ else:
 
 
 def plot_belief(dt, payoff_per_arm, cost_per_arm, rate_per_arm):
+    """
+    Plot a comparison between two methods to calculate belief for
+    a specified time step size and model parameters.
+    """
     mab = MAB(N, payoff_per_arm, cost_per_arm, rate_per_arm, b_ind=False)
     agent = Agent(mab, p0)
 
@@ -36,22 +47,6 @@ def plot_belief(dt, payoff_per_arm, cost_per_arm, rate_per_arm):
         p_bay.append(agent.p_bay)
         p_upd.append(agent.p_upd)
         agent.reset()
-
-    # PLOT the longest single run
-    # q = np.argmax([len(r) for r in p_bay])
-    # p_bay_l = p_bay[q]
-    # p_upd_l = p_upd[q]
-
-    # plt.plot(
-    #     np.arange(len(p_bay_l)) * agent.mab.dt,
-    #     p_bay_l,
-    #     label="Bayesian updates",
-    # )
-    # plt.plot(
-    #     np.arange(len(p_upd_l)) * agent.mab.dt,
-    #     p_upd_l,
-    #     label="adaptations",
-    # )
 
     # PLOT the maximal value over all runs (deterministic except for b=0 or 1)
     length = np.max([len(p) for p in p_bay])
@@ -69,23 +64,6 @@ def plot_belief(dt, payoff_per_arm, cost_per_arm, rate_per_arm):
         label="adaptations",
     )
 
-    # plt.errorbar(
-    #     np.arange(np.shape(p_bay)[1]) * agent.mab.dt,
-    #     np.mean(p_bay, axis=0),
-    #     yerr=np.std(p_bay, axis=0),
-    #     fmt=".",
-    #     color="blue",
-    #     capsize=2,
-    # )
-    # plt.errorbar(
-    #     np.arange(np.shape(p_upd)[1]) * agent.mab.dt,
-    #     np.mean(p_upd, axis=0),
-    #     yerr=np.std(p_upd, axis=0),
-    #     fmt=".",
-    #     color="red",
-    #     capsize=2,
-    # )
-
     plt.xlim(0, 4.3)
     plt.ylim(0, 1)
 
@@ -96,36 +74,21 @@ def plot_belief(dt, payoff_per_arm, cost_per_arm, rate_per_arm):
 
 
 def belief_figure(payoff_per_arm, cost_per_arm, rate_per_arm):
-    _, axes = plt.subplots(4, figsize=(15, 20))
+    """
+    Plot a comparison of the computed beliefs for several time step sizes.
+    """
+    _ = plt.subplots(4, figsize=(10, 7))
 
     vals = [0.2, 0.1, 0.05, 0.01]
 
-    # xlims = []
     for i in range(4):
         plt.subplot(2, 2, i + 1)
         plot_belief(vals[i], payoff_per_arm, cost_per_arm, rate_per_arm)
-    # for i in range(len(axes)):
-    # plt.subplot(2, 2, i + 1)
-    # plot_belief(vals[i], payoff_per_arm, cost_per_arm, rate_per_arm)
-
-    # print(xlims)
-    # print(
-    #     ax[0].get_xlim(),
-    #     ax[1].get_xlim(),
-    #     ax[2].get_xlim(),
-    #     ax[3].get_xlim(),
-    # )
-    # print(ax[0])
-    # plt.xlim(0, np.max(xlims))
-    # ax[1].set_xlim(0, np.max(xlims))
-    # ax[2].set_xlim(0, np.max(xlims))
-    # ax[3].set_xlim(0, np.max(xlims))
-    # plt.setp(ax, xlim=(0, np.max(xlims)))
 
     plt.suptitle(
         "Comparison of different methods to calculate the agent's belief over time."
     )
-
+    plt.tight_layout()
     plt.show()
 
 

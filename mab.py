@@ -1,3 +1,9 @@
+"""
+Author: Mara van der Meulen
+---
+This file contains a class representing a Multi-Armed
+Exponential Bandit model.
+"""
 import numpy as np
 
 
@@ -81,14 +87,19 @@ class MAB:
         occurs, calculate payoff and update model.
         Returns: 1 if a breakthrough occurs, 0 otherwise.
         """
-        self.costs += np.sum(self.x * self.arm_cost * self.dt)
+        time = np.random.exponential(1 / np.sum(self.arm_rate * self.x))
+
+        # Determine costs
+        self.costs += np.sum(
+            self.x * self.arm_cost * np.minimum(time, self.dt)
+        )
 
         # Probability of breakthrough explained in Section 3.2
         possible = np.sum(self.arm_success * self.x)
-        if np.random.uniform() < possible * (
-            1 - np.exp(-np.sum(self.arm_rate * self.x) * self.dt)
-        ):
+
+        if possible == 1 and time < self.dt:
             self.payoff += np.sum(self.arm_payoff * self.x)
+
             return 1
 
         return 0
@@ -104,31 +115,5 @@ class MAB:
             print("BREAKTHROUGH OCCURED")
 
         self.value = self.payoff - self.costs
-        # print("Value: %.2f" % self.value)
 
         return
-
-    def play(self):
-        """
-        Interactive game between the agent (user) and the ARMs.
-        ARMs are selected through user input.
-        """
-        while True:
-            i = input("Choose an arm: ")
-
-            if not i.isdigit() or not 0 <= int(i) < self.N:
-                continue
-
-            # Select ARM i during the next timestep
-            self.select_arm(int(i))
-
-            # Check for breakthrough
-            if self.timestep() == 1:
-                self.value = self.payoff - self.costs
-                print("BREAKTHROUGH, value: %.2f" % self.value)
-
-                return self.value
-
-            print(
-                "Total costs: %.2f" % self.costs, "Total payoff:", self.payoff
-            )

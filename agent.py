@@ -1,5 +1,10 @@
+"""
+Author: Mara van der Meulen
+---
+This file contains a class representing an agent that is
+assigned a Multi-Armed Bandit model to interact with.
+"""
 import numpy as np
-from soupsieve import select
 
 
 class Agent:
@@ -20,7 +25,7 @@ class Agent:
     def bay_updates(self):
         """
         Update the agent's belief over a single time interval of size dt
-        using Bayesian updates. See Equation 3.11 in Section 3.3.
+        using Bayesian updates. See Equation 2.11 in Section 2.3.
         """
         self.exponent += np.sum(self.mab.arm_rate * self.mab.x) * self.mab.dt
         prob = self.p0 * np.exp(-self.exponent)
@@ -31,25 +36,23 @@ class Agent:
     def update_belief(self):
         """
         Update the agent's belief over a single time interval of size dt
-        by adapting the previous belief. See Equation 3.12 in Section 3.3.
+        by adapting the previous belief. See Equation 2.12 in Section 2.3.
         """
+        prev = self.p_upd[-1]
         self.p_upd.append(
-            self.p_upd[-1]
+            prev
             - (
-                self.p_upd[-1]
-                * (1 - self.p_upd[-1])
+                prev
+                * (1 - prev)
                 * np.sum(self.mab.arm_rate * self.mab.x)
                 * self.mab.dt
             )
         )
 
-        if self.p_upd[-1] > self.p_upd[-2]:
-            print(self.p_upd[-1], self.p_upd[-2])
-
     def reset(self):
         """
         Resets the agent belief to the initial belief, and
-        resets the corresponding MAB game
+        resets the corresponding MAB model.
         """
         self.depth = 0
 
@@ -62,27 +65,15 @@ class Agent:
 
         self.mab.reset()
 
-    def V(self, dt):
-        breakthrough = self.p * np.sum(
-            self.mab.arm_rate * self.x * self.mab.arm_payoff * dt
-        )
-        flowcost = dt * np.sum(self.x * self.arm_cost)
-        future = 1 - self.p * np.sum(self.mab.arm_rate * self.x * dt) * self.V(
-            dt
-        )
-
-        return breakthrough - flowcost + future
-
     def first_strategy(self):
         """
-        Optimal strategy based on the first theorem in
-        Multi-Armed Exponential Bandit [Lang].
+        Optimal strategy based on Theorem 1 in the paper Multi-Armed
+        Exponential Bandit by [Chen et al]. Choose the arm with maximal
+        expected gain, unless expected gain is negative for all arms.
         """
-        if self.depth > 986 or self.p <= np.min(
+        while self.p > np.min(
             self.mab.arm_cost / (self.mab.arm_rate * self.mab.arm_payoff)
         ):
-            self.mab.quit()
-        else:
             # Choose project i that maximizes (pi_i p - c_i / lambda_i)
             vals = (
                 self.mab.arm_rate * self.p
@@ -93,20 +84,27 @@ class Agent:
 
             self.update_belief()
             self.bay_updates()
-            self.p_vals.append(self.p)
+            # self.p_vals.append(self.p)
 
-            self.depth += 1
+            if self.mab.timestep():
+                break
 
-            # Quit when breakthrough happens
-            if self.mab.timestep() == 1:
-                self.mab.quit()
+        self.mab.quit()
+
+    def baseline_strategy(self, random=True):
+        """
+        Baseline strategy where arms are chosen randomly. After each time
+        step, there is a 20% probability of quitting. Alternatively, a minimal
+        costs baseline strategy with 1% quitting probability can be used.
+        """
+        while np.random.uniform() > 0.2 * random + (0.01) * (not random):
+            if random:
+                i = np.random.randint(self.mab.N)
             else:
-                self.first_strategy()
+                i = np.argmin(self.mab.arm_cost)
 
-    def basic_strategy(self):
-        self.mab.play()
-        while self.mab.timestep() == 0:
-            for i in range(self.mab.N):
-                print(i)
-                self.mab.select_arm(i)
-        print("BREAKTHROUGH")
+            self.mab.select_arm(i)
+
+            if self.mab.timestep() == 1:
+                break
+        self.mab.quit()

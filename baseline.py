@@ -1,10 +1,9 @@
 """
 Author: Mara van der Meulen
 ---
-Similar to first_strategy.py, but experiments are run
-once with and once without information source to compare,
-or once with possibility of succes general and once with
-possibility of success individual per arm.
+Similar to first_strategy.py, but experiments are run once
+with the optimal strategy, once with a random decision baseline
+strategy and once with a minimal costs baseline strategy.
 """
 import numpy as np
 import matplotlib.pyplot as plt
@@ -21,7 +20,7 @@ p_vals = np.linspace(0, 1, 41)[:-1]
 N = 20
 
 # Choose mode "identical", "random", "specific"
-arm_mode = "specific"
+arm_mode = "identical"
 if arm_mode == "identical":
     payoff_per_arm, cost_per_arm, rate_per_arm = arm.setting_a()
 elif arm_mode == "random":
@@ -29,45 +28,38 @@ elif arm_mode == "random":
 else:
     payoff_per_arm, cost_per_arm, rate_per_arm = arm.setting_c(N)
 
-# Choose experiment "info" or "b_ind"
-experiment = "info"
 
-
-def plot_values(
-    N,
-    payoff_per_arm,
-    cost_per_arm,
-    rate_per_arm,
-    label,
-    info=False,
-    b_ind=False,
-):
+def plot_values(N, payoff_per_arm, cost_per_arm, rate_per_arm, label, base=0):
     """
-    Plot the average eventual value where the MAB model is set with the
-    specified parameters and settings.
+    Plot the average eventual value with 95% confidence interval, the base
+    parameter is used to indicate which strategy should be use.
     """
     mab = MAB(
         N,
         payoff_per_arm,
         cost_per_arm,
         rate_per_arm,
-        info=info,
-        source=(np.max(payoff_per_arm - cost_per_arm / rate_per_arm) * 0.2, 1),
-        b_ind=b_ind,
+        info=False,
+        b_ind=False,
     )
 
     agent = Agent(mab, 0.5)
 
-    # Run experiment
     data = []
     for p in p_vals:
         agent.p0 = p
+        agent.mab.priori = p
         agent.reset()
 
         vals = []
         success = 0
         for _ in range(trials):
-            agent.first_strategy()
+            if base == 1:
+                agent.baseline_strategy()
+            elif base == 2:
+                agent.baseline_strategy(random=False)
+            else:
+                agent.first_strategy()
             vals.append(agent.mab.value)
 
             if agent.mab.payoff != 0:
@@ -88,42 +80,32 @@ def plot_values(
     )
 
 
-# Plot the results
+# Plot the results for all three strategies
 _ = plt.figure(figsize=(8, 5))
-if experiment == "info":
-    plot_values(
-        N,
-        payoff_per_arm,
-        cost_per_arm,
-        rate_per_arm,
-        "without information",
-        info=False,
-    )
-    plot_values(
-        N,
-        payoff_per_arm,
-        cost_per_arm,
-        rate_per_arm,
-        "information source",
-        info=True,
-    )
-else:
-    plot_values(
-        N,
-        payoff_per_arm,
-        cost_per_arm,
-        rate_per_arm,
-        "general possibility",
-        b_ind=False,
-    )
-    plot_values(
-        N,
-        payoff_per_arm,
-        cost_per_arm,
-        rate_per_arm,
-        "possibility per arm",
-        b_ind=True,
-    )
+plot_values(
+    N,
+    payoff_per_arm,
+    cost_per_arm,
+    rate_per_arm,
+    "optimal strategy",
+    base=0,
+)
+plot_values(
+    N,
+    payoff_per_arm,
+    cost_per_arm,
+    rate_per_arm,
+    "baseline strategy (random)",
+    base=1,
+)
+plot_values(
+    N,
+    payoff_per_arm,
+    cost_per_arm,
+    rate_per_arm,
+    "baseline strategy (min costs)",
+    base=2,
+)
 
 plt.xticks(p_vals[::4])
 

@@ -1,3 +1,4 @@
+# REMOVE
 # Similar to first_strategy.py, but experiments
 # are run once with and once without
 # information source to compare
@@ -67,7 +68,7 @@ plot_values("priori matches initial belief", mode=2)
 plt.xticks(p_vals[::2])
 
 plt.title(
-    "Agent's strategy based on Theorem 1 in Multi-Armed Exponential Bandit [Gao et al]"
+    "Agent's strategy based on Theorem 1 in Multi-Armed Exponential Bandit [Chen et al]"
 )
 plt.xlabel("initial belief / priori probability $\Pr[b=1]$")
 plt.ylabel("value")
