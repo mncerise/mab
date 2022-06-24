@@ -17,7 +17,6 @@ class Agent:
 
         # Bayesian updates
         self.exponent = 0
-        self.p_vals = [self.p0]
 
         self.p_upd = [self.p0]
         self.p_bay = [self.p0]
@@ -57,7 +56,6 @@ class Agent:
         self.depth = 0
 
         self.p = self.p0
-        self.p_vals = [self.p0]
 
         self.exponent = 0
         self.p_bay = [self.p0]
@@ -84,7 +82,6 @@ class Agent:
 
             self.update_belief()
             self.bay_updates()
-            # self.p_vals.append(self.p)
 
             if self.mab.timestep():
                 break
